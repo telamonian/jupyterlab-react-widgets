@@ -1,6 +1,6 @@
 [![Datalayer](https://dsp.docs.datalayer.io/logo/datalayer-25.svg)](https://datalayer.io)
 
-# [WIP] JupyterLab React Widgets
+# [WIP] ⚛️ JupyterLab React Widgets
 
 > This is a Work In Progress - You can try and contribute to make it usable...
 
