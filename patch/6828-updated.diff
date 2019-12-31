@@ -1,0 +1,400 @@
+diff --git a/packages/ui-components/package.json b/packages/ui-components/package.json
+index 18753c8c8f1..d5d6fa3067c 100644
+--- a/packages/ui-components/package.json
++++ b/packages/ui-components/package.json
+@@ -16,7 +16,8 @@
+     "lib/*.d.ts",
+     "lib/*.js.map",
+     "lib/*.js",
+-    "style/*.css"
++    "style/*.css",
++    "style/font/*.*"
+   ],
+   "sideEffects": [
+     "style/**/*"
+@@ -35,9 +36,7 @@
+     "watch": "tsc -b --watch"
+   },
+   "dependencies": {
+-    "@blueprintjs/core": "^3.9.0",
+-    "@blueprintjs/icons": "^3.3.0",
+-    "@blueprintjs/select": "^3.3.0",
++    "@material-ui/core": "^4.2.0",
+     "react": "~16.8.4"
+   },
+   "devDependencies": {
+@@ -53,11 +52,6 @@
+     "access": "public"
+   },
+   "jupyterlab": {
+-    "extraStyles": {
+-      "blueprintjs": [
+-        "icons/lib/css/blueprint-icons.css",
+-        "core/lib/css/blueprint.css"
+-      ]
+-    }
++    "extraStyles": {}
+   }
+ }
+diff --git a/packages/ui-components/src/index.tsx b/packages/ui-components/src/index.tsx
+index 2d7e1746377..1a6a8349c9b 100644
+--- a/packages/ui-components/src/index.tsx
++++ b/packages/ui-components/src/index.tsx
+@@ -2,98 +2,86 @@
+ // Distributed under the terms of the Modified BSD License.
+ 
+ import * as React from 'react';
++import { default as MButton, ButtonProps } from '@material-ui/core/Button';
+ import {
+-  Button as BPButton,
+-  IButtonProps as IBPButtonProps
+-} from '@blueprintjs/core/lib/cjs/components/button/buttons';
++  default as MIcon,
++  IconProps as IIconProps
++} from '@material-ui/core/Icon';
+ import {
+-  Icon as BPIcon,
+-  IIconProps
+-} from '@blueprintjs/core/lib/cjs/components/icon/icon';
+-import {
+-  Collapse as BPCollapse,
+-  ICollapseProps
+-} from '@blueprintjs/core/lib/cjs/components/collapse/collapse';
+-import {
+-  InputGroup as BPInputGroup,
+-  IInputGroupProps as IBPInputGroupProps
+-} from '@blueprintjs/core/lib/cjs/components/forms/inputGroup';
+-import {
+-  HTMLSelect as BPHTMLSelect,
+-  IHTMLSelectProps
+-} from '@blueprintjs/core/lib/cjs/components/html-select/htmlSelect';
+-import {
+-  Select as BPSelect,
+-  ISelectProps
+-} from '@blueprintjs/select/lib/cjs/components/select/select';
++  default as MCollapse,
++  CollapseProps
++} from '@material-ui/core/Collapse';
++import { default as Input, InputProps } from '@material-ui/core/Input';
++import InputAdornment from '@material-ui/core/InputAdornment';
++import { default as MSelect, SelectProps } from '@material-ui/core/Select';
+ import { combineClassNames } from './utils';
+ 
+-export { Intent } from '@blueprintjs/core/lib/cjs/common/intent';
+-
+-interface IButtonProps extends IBPButtonProps {
++interface IButtonProps extends ButtonProps {
+   title?: string;
+   type?: 'button' | 'submit' | 'reset';
+ }
+ 
+-interface IInputGroupProps extends IBPInputGroupProps {
+-  rightIcon?: IIconProps['icon'];
++interface IInputGroupProps extends InputProps {
++  className: string;
++  rightIcon?: any;
+ }
+ 
+ type CommonProps<T> = React.DOMAttributes<T>;
+ 
+ export const Button = (props: IButtonProps & CommonProps<any>) => (
+-  <BPButton
++  <MButton
+     {...props}
+-    className={combineClassNames(
+-      props.className,
+-      props.minimal && 'minimal',
+-      'jp-Button'
+-    )}
++    className={combineClassNames(props.className, 'jp-Button')}
+   />
+ );
+ 
+ export const InputGroup = (props: IInputGroupProps & CommonProps<any>) => {
+-  if (props.rightIcon) {
++  const { rightIcon, ...oprops } = props;
++
++  if (rightIcon) {
+     return (
+-      <BPInputGroup
+-        {...props}
+-        className={combineClassNames(props.className, 'jp-InputGroup')}
+-        rightElement={
+-          <div className="jp-InputGroupAction">
+-            <Icon className="jp-Icon" icon={props.rightIcon} />
+-          </div>
++      <Input
++        {...oprops}
++        className={combineClassNames(oprops.className, 'jp-InputGroup')}
++        disableUnderline={true}
++        endAdornment={
++          <InputAdornment position="end" disablePointerEvents={true}>
++            <Icon>{rightIcon}</Icon>
++          </InputAdornment>
+         }
+       />
+     );
+   }
+   return (
+-    <BPInputGroup
+-      {...props}
+-      className={combineClassNames(props.className, 'jp-InputGroup')}
++    <Input
++      {...oprops}
++      disableUnderline={true}
++      className={combineClassNames(oprops.className, 'jp-InputGroup')}
+     />
+   );
+ };
+ 
+ export const Icon = (props: IIconProps) => (
+-  <BPIcon
+-    {...props}
+-    className={combineClassNames(props.className, 'jp-Icon')}
+-  />
++  <MIcon {...props} className={combineClassNames(props.className, 'jp-Icon')} />
+ );
+ 
+-export const Collapse = (props: ICollapseProps & CommonProps<any>) => (
+-  <BPCollapse {...props} />
++export const Collapse = (props: CollapseProps & CommonProps<any>) => (
++  <MCollapse {...props} />
+ );
+ 
+-export const HTMLSelect = (props: IHTMLSelectProps & CommonProps<any>) => (
+-  <BPHTMLSelect
++export const HTMLSelect = (props: SelectProps & CommonProps<any>) => (
++  <MSelect
++    native
+     {...props}
++    input={
++      <Input {...(props.inputProps as InputProps)} disableUnderline={true} />
++    }
+     className={combineClassNames(props.className, 'jp-HTMLSelect')}
+   />
+ );
+ 
+-export const Select = (props: ISelectProps<any> & CommonProps<any>) => (
+-  <BPSelect
++export const Select = (props: SelectProps & CommonProps<any>) => (
++  <MSelect
+     {...props}
+     className={combineClassNames(props.className, 'jp-Select')}
+   />
+diff --git a/packages/ui-components/style/base.css b/packages/ui-components/style/base.css
+index 8adb7976093..b0aa9faed88 100644
+--- a/packages/ui-components/style/base.css
++++ b/packages/ui-components/style/base.css
+@@ -3,76 +3,35 @@
+ | Distributed under the terms of the Modified BSD License.
+ |----------------------------------------------------------------------------*/
+ 
+-/* Override Blueprint's _reset.scss styles */
+-html {
+-  box-sizing: unset;
+-}
+-
+-*,
+-*::before,
+-*::after {
+-  box-sizing: unset;
+-}
+-
+-body {
+-  color: unset;
+-  font-family: var(--jp-ui-font-family);
+-}
+-
+-p {
+-  margin-top: unset;
+-  margin-bottom: unset;
+-}
+-
+-small {
+-  font-size: unset;
+-}
+-
+-strong {
+-  font-weight: unset;
+-}
+-
+-/* Override Blueprint's _typography.scss styles */
+-a {
+-  text-decoration: unset;
+-  color: unset;
+-}
+-a:hover {
+-  text-decoration: unset;
+-  color: unset;
+-}
+-
+-/* Override Blueprint's _accessibility.scss styles */
+-:focus {
+-  outline: unset;
+-  outline-offset: unset;
+-  -moz-outline-radius: unset;
+-}
++@import './font/material-icons.css';
+ 
+ /* Styles for ui-components */
+-.jp-Button {
++button.jp-Button {
++  color: var(--jp-ui-font-color1);
++  background: var(--jp-layout-color1);
+   border-radius: var(--jp-border-radius);
+   padding: 0px 12px;
++  font-family: var(--jp-ui-font-family);
+   font-size: var(--jp-ui-font-size1);
++  text-transform: initial;
++  font-weight: initial;
++  letter-spacing: normal;
+ }
+ 
+ /* Use our own theme for hover styles */
+-button.jp-Button.bp3-button.bp3-minimal:hover {
++button.jp-Button:hover {
+   background-color: var(--jp-layout-color2);
+ }
+-.jp-Button.minimal {
+-  color: unset !important;
+-}
+-
+-.jp-Button.jp-ToolbarButtonComponent {
+-  text-transform: none;
+-}
+ 
+ .jp-InputGroup input {
+-  box-sizing: border-box;
++  height: auto;
++  padding-left: 10px;
+   border-radius: 0;
+-  background-color: transparent;
+   color: var(--jp-ui-font-color0);
++  font-family: var(--jp-ui-font-family);
++  font-size: var(--jp-ui-font-size1);
++  box-sizing: border-box;
++  background-color: transparent;
+   box-shadow: inset 0 0 0 var(--jp-border-width) var(--jp-input-border-color);
+ }
+ 
+@@ -87,25 +46,28 @@ input::placeholder {
+   color: var(--jp-ui-font-color3);
+ }
+ 
+-.jp-Icon {
+-  color: var(--jp-layout-color4);
++.jp-InputGroup .MuiInputAdornment-root {
++  height: auto;
++  right: 0;
++  position: absolute;
+ }
+ 
+-.jp-InputGroupAction {
+-  padding: 6px;
++.jp-Icon {
++  color: var(--jp-layout-color4);
+ }
+ 
+-.jp-HTMLSelect.bp3-html-select.bp3-minimal select {
++.jp-HTMLSelect select {
+   height: 24;
+   font-size: var(--jp-ui-font-size1);
+   line-height: 14px;
+   border-radius: 0;
+   display: block;
+   color: var(--jp-ui-font-color0);
++  padding-left: 10px;
+ }
+ 
+ /* Use our own theme for hover styles */
+-.jp-HTMLSelect.bp3-html-select.bp3-minimal select:hover {
++.jp-HTMLSelect select:hover {
+   color: var(--jp-ui-font-color0);
+   background-color: var(--jp-layout-color2);
+ }
+diff --git a/packages/ui-components/style/font/MaterialIcons-Regular.eot b/packages/ui-components/style/font/MaterialIcons-Regular.eot
+new file mode 100644
+index 00000000000..70508ebabc9
+Binary files /dev/null and b/packages/ui-components/style/font/MaterialIcons-Regular.eot differ
+diff --git a/packages/ui-components/style/font/MaterialIcons-Regular.ttf b/packages/ui-components/style/font/MaterialIcons-Regular.ttf
+new file mode 100644
+index 00000000000..7015564ad16
+Binary files /dev/null and b/packages/ui-components/style/font/MaterialIcons-Regular.ttf differ
+diff --git a/packages/ui-components/style/font/MaterialIcons-Regular.woff b/packages/ui-components/style/font/MaterialIcons-Regular.woff
+new file mode 100644
+index 00000000000..b648a3eea2d
+Binary files /dev/null and b/packages/ui-components/style/font/MaterialIcons-Regular.woff differ
+diff --git a/packages/ui-components/style/font/MaterialIcons-Regular.woff2 b/packages/ui-components/style/font/MaterialIcons-Regular.woff2
+new file mode 100644
+index 00000000000..9fa21125208
+Binary files /dev/null and b/packages/ui-components/style/font/MaterialIcons-Regular.woff2 differ
+diff --git a/packages/ui-components/style/font/README.md b/packages/ui-components/style/font/README.md
+new file mode 100644
+index 00000000000..ce4141ecad5
+--- /dev/null
++++ b/packages/ui-components/style/font/README.md
+@@ -0,0 +1,9 @@
++The recommended way to use the Material Icons font is by linking to the web font hosted on Google Fonts:
++
++```html
++<link href="https://fonts.googleapis.com/icon?family=Material+Icons"
++      rel="stylesheet">
++```
++
++Read more in our full usage guide:
++http://google.github.io/material-design-icons/#icon-font-for-the-web
+diff --git a/packages/ui-components/style/font/material-icons.css b/packages/ui-components/style/font/material-icons.css
+new file mode 100644
+index 00000000000..2270c09d014
+--- /dev/null
++++ b/packages/ui-components/style/font/material-icons.css
+@@ -0,0 +1,36 @@
++@font-face {
++  font-family: 'Material Icons';
++  font-style: normal;
++  font-weight: 400;
++  src: url(MaterialIcons-Regular.eot); /* For IE6-8 */
++  src: local('Material Icons'),
++       local('MaterialIcons-Regular'),
++       url(MaterialIcons-Regular.woff2) format('woff2'),
++       url(MaterialIcons-Regular.woff) format('woff'),
++       url(MaterialIcons-Regular.ttf) format('truetype');
++}
++
++.material-icons {
++  font-family: 'Material Icons';
++  font-weight: normal;
++  font-style: normal;
++  font-size: 24px;  /* Preferred icon size */
++  display: inline-block;
++  line-height: 1;
++  text-transform: none;
++  letter-spacing: normal;
++  word-wrap: normal;
++  white-space: nowrap;
++  direction: ltr;
++
++  /* Support for all WebKit browsers. */
++  -webkit-font-smoothing: antialiased;
++  /* Support for Safari and Chrome. */
++  text-rendering: optimizeLegibility;
++
++  /* Support for Firefox. */
++  -moz-osx-font-smoothing: grayscale;
++
++  /* Support for IE. */
++  font-feature-settings: 'liga';
++}
+diff --git a/packages/ui-components/style/index.css b/packages/ui-components/style/index.css
+index ee417b10abe..e9cae08983d 100644
+--- a/packages/ui-components/style/index.css
++++ b/packages/ui-components/style/index.css
+@@ -4,8 +4,5 @@
+ |----------------------------------------------------------------------------*/
+ 
+ /* This file was auto-generated by ensurePackage() in @jupyterlab/buildutils */
+-@import url('~@blueprintjs/core/lib/css/blueprint.css');
+-@import url('~@blueprintjs/icons/lib/css/blueprint-icons.css');
+-@import url('~@blueprintjs/select/lib/css/blueprint-select.css');
+ 
+ @import url('./base.css');
